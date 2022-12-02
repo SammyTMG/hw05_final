@@ -26,7 +26,7 @@ def group_posts(request, slug):
 
 def profile(request, username):
     author = get_object_or_404(User, username=username)
-    posts = Post.objects.filter(author=author)
+    posts = author.posts.all()
     following = author.following.exists()
 
     context = {
@@ -34,8 +34,7 @@ def profile(request, username):
         'posts': posts,
         'following': following
     }
-    context.update(page_numbers(Post.objects.filter(author=author),
-                                request))
+    context.update(page_numbers(posts, request))
     return render(request, 'posts/profile.html', context)
 
 
@@ -112,5 +111,6 @@ def profile_follow(request, username):
 @login_required
 def profile_unfollow(request, username):
     author = get_object_or_404(User, username=username)
-    Follow.objects.get(user=request.user, author=author).delete()
+    follow = get_object_or_404(Follow, user=request.user, author=author)
+    follow.delete()
     return redirect('posts:follow_index')
